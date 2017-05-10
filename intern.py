@@ -38,12 +38,14 @@ if __name__ == '__main__':
     importMarriageCSV("marriage.csv")
     importPersonCSV("person.csv")
     x = Repo()
-    person = x.getPersonById("0000590103")
+    person = x.getPersonById("0000590119")
     person2 = x.getPersonById("0000590118")
     child = x.getPersonById("0000590118")
     # cek apakah id terdapat pada list person
     if person and child and person2:
         print('Person Name :%s'%person.getName())
+        print('Person2 Name :%s'%person2.getName())
+        print('Child Name :%s'%child.getName())
         print('Task 3')
         print('Person is married :%s' %person.isMarried())
         print('Person is divorced :%s' %person.isDivorced())
@@ -75,6 +77,7 @@ if __name__ == '__main__':
         find = 'parent'
         print('Find person %s : %s'%(find,person.find(find)))
         print('Get relation of two person : %s' %person.relationTo(person2))
+
 
     else:
         print(person)

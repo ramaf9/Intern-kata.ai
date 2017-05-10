@@ -139,10 +139,10 @@ class Person(Repo, Marriage):
         # looping setiap list marriage
         for i, v in self.dictMarriage.items():
             # cek pasangan dari person
-            if self.id == v.getHusband():
+            if self.id == v.getHusband() and not v.isEnded():
                 spouse = v.getWife()
                 break
-            elif self.id == v.getWife():
+            elif self.id == v.getWife() and not v.isEnded():
                 spouse = v.getHusband()
                 break
         # cek bila pasangan ada
@@ -198,7 +198,7 @@ class Person(Repo, Marriage):
                 childrens.append(v) # tambahkan ke array
         return childrens
 
-    def getSiblings(self):
+    def getSiblings(self, gender = True):
         """
             mengembalikan semua saudara (perempuan, laki2)
             dari person
@@ -209,8 +209,19 @@ class Person(Repo, Marriage):
         # looping tiap list person
         for i, v in self.dictPerson.items():
             # apabila person bukan merupakan diri sendiri dan memiliki orang tua yang sama
-            if self.getId() != v.getId() and self.getFather() == v.getFather() and self.getMother() == v.getMother() :
+            if not gender:
+                if gender == 'male':
+                    is_gender = v.isMale()
+                elif gender == 'female':
+                    is_gender = v.isFemale()
+                else:
+                    is_gender = True
+            else:
+                is_gender = True
+
+            if (self.getId() != v.getId() and self.getFather() == v.getFather() and self.getMother() == v.getMother()) and is_gender :
                 person = v.getId()
+                # cari orang dari id
                 sib = self.getPersonById(person)
                 siblings.append(sib) # tambahkan array
         return siblings
@@ -219,23 +230,14 @@ class Person(Repo, Marriage):
         """
             mengembalikan saudara perempuan dari person
         """
-        sisters = []
-        # loop tiap person
-        for i, v in self.dictPerson.items():
-            # apabila person bukan merupakan diri sendiri dan memiliki orang tua yang sama dan perempuan
-            if (self.getId() != v.getId() and self.getFather() == v.getFather() and self.getMother() == v.getMother()) and v.isFemale():
-                sisters.append(v)
+        sisters = self.getSiblings('female')
         return sisters
 
     def getBrothers(self):
         """
             mengembalikan saudara laki-laki dari person
         """
-        brothers = []
-        for i, v in self.dictPerson.items():
-            # apabila person bukan merupakan diri sendiri dan memiliki orang tua yang sama dan laki2
-            if (self.getId() != v.getId() and self.getFather() == v.getFather() and self.getMother() == v.getMother()) and v.isMale():
-                brothers.append(v)
+        brothers = self.getSiblings('male')
         return brothers
 
     def getStepChildren(self):
@@ -256,51 +258,21 @@ class Person(Repo, Marriage):
                     # ambil nilai pasangan
                     if person == v.getHusband():
                         spouse = v.getWife()
+                        # cari orang dari id spouse
                         x = self.getPersonById(spouse)
                         stepchildrens.append(x)
                     elif person == v.getWife():
                         spouse = v.getHusband()
+                        # cari orang dari id spouse
                         x = self.getPersonById(spouse)
                         stepchildrens.append(x)
         return stepchildrens
 
-    def getStepSisters(self):
+    def __getStepSiblings(self, gender = None):
         """
-            mengembalikan saudara perempuan dari pasangan person
+            mengembalikan saudara laki2 atau perempuan
         """
-        # set default
-        stepsisters = []
-        person = ''
-        spouse = ''
-        # loop tiap list marriage
-        for i, v in self.dictMarriage.items():
-            # cek apakah id = suami
-            if self.id == v.getHusband():
-                spouse = self.getPersonById(v.getWife()) # ambil pasangan
-                # loop tiap list person
-                for i, v in self.dictPerson.items():
-                    # cek nilai orang tua pasangan dengan orang tua person dan perempuan
-                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and v.isFemale():
-                        if v.getId() != spouse.getId():
-                            person = v.getId()
-                            s = self.getPersonById(person)
-                            stepsisters.append(s)
-            # cek apakah id = istri
-            elif self.id == v.getWife():
-                spouse = self.getPersonById(v.getHusband()) # ambil pasangan
-                for i, v in self.dictPerson.items():
-                    # cek nilai orang tua pasangan dengan orang tua person dan perempuan
-                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and v.isFemale():
-                        if v.getId() != spouse.getId():
-                            person = v.getId()
-                            s = self.getPersonById(person)
-                            stepsisters.append(s)
-        return stepsisters
-
-    def getStepBrothers(self):
-        """
-            mengembalikan saudara laki2 dari pasangan person
-        """
+        print('GENDERKU %s' %gender)
         # set default
         stepbrothers = []
         person = ''
@@ -309,21 +281,57 @@ class Person(Repo, Marriage):
             if self.id == v.getHusband():
                 spouse = self.getPersonById(v.getWife())
                 for i, v in self.dictPerson.items():
+                    # ambil value gender menjadi getGender
+                    if gender:
+                        if gender == 'male':
+                            is_gender = v.isMale()
+                        elif gender == 'female':
+                            is_gender = v.isFemale()
+                        else:
+                            is_gender = True
                     # cek nilai orang tua pasangan dengan orang tua person dan laki2
-                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and v.isMale():
+                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and is_gender:
                         if v.getId() != spouse.getId():
                             person = v.getId()
+                            # cari orang dari id
                             b = self.getPersonById(person)
                             stepbrothers.append(b)
             elif self.id == v.getWife():
                 spouse = self.getPersonById(v.getHusband())
                 for i, v in self.dictPerson.items():
+                    # ambil value gender menjadi getGender
+                    if gender:
+                        if gender == 'male':
+                            is_gender = v.isMale()
+                        elif gender == 'female':
+                            is_gender = v.isFemale()
+                        else:
+                            is_gender = True
                     # cek nilai orang tua pasangan dengan orang tua person dan laki2
-                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and v.isMale():
+                    if (spouse.getFather() == v.getFather() and spouse.getMother() == v.getMother()) and is_gender:
                         if v.getId() != spouse.getId():
                             person = v.getId()
+                            # cari orang dari id
                             b = self.getPersonById(person)
                             stepbrothers.append(b)
+
+        return stepbrothers
+
+
+    def getStepSisters(self):
+        """
+            mengembalikan saudara perempuan dari pasangan person
+        """
+        # set default
+        stepsisters = self.__getStepSiblings('female')
+        return stepsisters
+
+    def getStepBrothers(self):
+        """
+            mengembalikan saudara laki2 dari pasangan person
+        """
+        # set default
+        stepbrothers = self.__getStepSiblings('male')
         return stepbrothers
 
     def getStepMother(self):
@@ -381,25 +389,26 @@ class Person(Repo, Marriage):
             return []
 
     def getUncles(self):
+        """
+            mengembalikan tante dari person
+        """
         uncles = []
         person = ''
+        # cek semua kakek nenek
+        # ambil value tiap kakek nenek
+        gp = self.getGrandParents()
+        fathergf = gp[0].getId() # id kakek dari ayah
+        mothergf = gp[1].getId() # id kakek dari ibu
+        fathergm = gp[2].getId() # id nenek dari ayah
+        mothergm = gp[3].getId() # id nenek dari ibu
+        # loop tiap person
         for i, v in self.dictPerson.items():
-            fathergf = self.getPersonById(self.getFather())
-            if fathergf:
-                fathergf = fathergf.getFather()
-            fathergm = self.getPersonById(self.getFather())
-            if fathergm:
-                fathergm = fathergm.getMother()
-            mothergf = self.getPersonById(self.getMother())
-            if mothergf:
-                mothergf = mothergf.getFather()
-            mothergm = self.getPersonById(self.getMother())
-            if mothergm:
-                mothergm = mothergm.getMother()
 
+            # cek apakah orang tua tiap orang = kakek nenek dan laki2
             if ((fathergf == v.getFather() or mothergf == v.getFather()) and (fathergm == v.getMother() or mothergm == v.getMother())) and v.isMale():
                 if self.getFather() != v.getId():
                     person = v.getId()
+                    # cari orang dari id
                     u = self.getPersonById(person)
                     uncles.append(u)
         return uncles
@@ -410,23 +419,16 @@ class Person(Repo, Marriage):
         """
         aunties = []
         person = ''
+        gp = self.getGrandParents()
+        # cek semua kakek nenek
+        # ambil value tiap kakek nenek
+        fathergf = gp[0].getId() # id kakek dari ayah
+        mothergf = gp[1].getId() # id kakek dari ibu
+        fathergm = gp[2].getId() # id nenek dari ayah
+        mothergm = gp[3].getId() # id nenek dari ibu
         # looping tiap person
         for i, v in self.dictPerson.items():
-            # cek semua kakek nenek
-            # ambil value tiap kakek nenek
-            fathergf = self.getPersonById(self.getFather())
-            if fathergf:
-                fathergf = fathergf.getFather()
-            fathergm = self.getPersonById(self.getFather())
-            if fathergm:
-                fathergm = fathergm.getMother()
-            mothergf = self.getPersonById(self.getMother())
-            if mothergf:
-                mothergf = mothergf.getFather()
-            mothergm = self.getPersonById(self.getMother())
-            if mothergm:
-                mothergm = mothergm.getMother()
-            # cek apakah orang tua tiap orang = kakek nenek
+            # cek apakah orang tua tiap orang = kakek nenek dan perempuan
             if ((fathergf == v.getFather() or mothergf == v.getFather()) and (fathergm == v.getMother() or mothergm == v.getMother())) and v.isFemale():
                 if self.getMother() != v.getId():
                     person = v.getId()
@@ -478,6 +480,7 @@ class Person(Repo, Marriage):
 
         return grandmothers
 
+
     def getGrandParents(self):
         """
             mengembalikan semua kakek nenek
@@ -486,11 +489,11 @@ class Person(Repo, Marriage):
         # ambil dari fungsi getGrandFathers
         gf = self.getGrandFathers()
         if gf:
-            grandparents.append(gf)
+            grandparents.extend(gf)
         # ambil dari fungsi getGrandMothers
         gm = self.getGrandMothers()
         if gm:
-            grandparents.append(gm)
+            grandparents.extend(gm)
         return grandparents
 
     def getGrandChildren(self):
